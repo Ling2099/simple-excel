@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.util.StringUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.huoguo.simpleexcel.annotation.ExcelColumns;
@@ -36,7 +37,7 @@ public class ExcelService {
      * @param <T> 注明泛型
      * @return 实体类集合
      */
-    public static <T> List<T> importData(MultipartFile file, Integer sheetNo, T clazz) {
+    public static <T> List<T> importData(MultipartFile file, Integer sheetNo, Class<T> clazz) {
         ExcelReaderBuilder excelReaderBuilder = null;
         try {
             excelReaderBuilder = EasyExcelFactory.read(MultipartFileToFile.multipartFileToFile(file), new NoModelDataListener());
@@ -54,7 +55,7 @@ public class ExcelService {
      * @param <T> 注明泛型
      * @return 实体类集合
      */
-    private static <T> List<T> toList(List<Map<Integer, Object>> list, T clazz) {
+    private static <T> List<T> toList(List<Map<Integer, Object>> list, Class<T> clazz) {
 
         int size = list.size();
         if (size == 0) {
@@ -62,7 +63,6 @@ public class ExcelService {
         }
 
         List<T> result = new ArrayList<>();
-        Field[] fields = clazz.getClass().getDeclaredFields();
 
         try {
             for (int i = 0; i < size; i++) {
@@ -70,17 +70,20 @@ public class ExcelService {
                     throw new RuntimeException("The data cannot be empty");
                 }
 
+                T t =  clazz.newInstance();
+                Field[] fields = t.getClass().getDeclaredFields();
+
                 for (Field field : fields) {
+                    field.setAccessible(true);
                     if (field.isAnnotationPresent(ExcelColumns.class)) {
                         ExcelColumns excelColumns = field.getAnnotation(ExcelColumns.class);
-                        Field attribute = clazz.getClass().getDeclaredField(field.getName());
-                        attribute.setAccessible(true);
-                        attribute.set(clazz, getValue(field.getType(), list.get(i).get(excelColumns.index())));
+                        Object v = list.get(i).get(excelColumns.index());
+                        field.set(t, convert(v, field.getType()));
                     }
                 }
-                result.add(clazz);
+                result.add(t);
             }
-        } catch (IllegalAccessException | NoSuchFieldException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
         return result;
@@ -88,54 +91,20 @@ public class ExcelService {
 
     /**
      * 类属性值的为空判断
+     * @param obj 类属性值
      * @param type 类属性类型
-     * @param value 类属性值
-     * @return Object
+     * @param <T> 表名泛型
+     * @return 泛型对象
      */
-    private static Object getValue(Class<?> type, Object value) {
-        if(type == int.class  || value instanceof Integer){
-            if(null == value){
-                return 0;
+    private static <T> T convert(Object obj, Class<T> type) {
+        if (obj != null && !StringUtils.isEmpty(obj.toString())) {
+            if (type.equals(String.class)) {
+                return (T) obj.toString();
+            } else if (type.equals(BigDecimal.class)) {
+                return (T) new BigDecimal(obj.toString());
             }
-            return Integer.parseInt(value.toString());
-        }else if(type == short.class){
-            if(null == value){
-                return 0;
-            }
-            return value;
-        }else if(type == byte.class){
-            if(null == value){
-                return 0;
-            }
-            return value;
-        }else if(type == double.class){
-            if(null == value){
-                return 0;
-            }
-            return Double.parseDouble(value.toString());
-        }else if(type == long.class){
-            if(null == value){
-                return 0;
-            }
-            return value;
-        }else if(type == String.class){
-            if(null == value){
-                return "";
-            }
-            return value;
-        }else if(type == boolean.class){
-            if(null == value){
-                return true;
-            }
-            return value;
-        }else if(type == BigDecimal.class){
-            if(null == value){
-                return new BigDecimal(0);
-            }
-            return new BigDecimal(value + "");
-        }else {
-            return type.cast(value);
         }
+        return null;
     }
 
     /**

@@ -6,7 +6,7 @@
 
 ## 说明 | Instructions
 
-- @ExcelColumns 文件导入时，解析Excel数据时对应的表头文件下标
+- @ExcelColumns 文件导入时，解析Excel数据对应的表头文件下标
 - @ExcelProperty EasyExcel自带的注解
 - @ExcelIgnore EasyExcel自带的注解
 
@@ -48,7 +48,7 @@
           * 文件导入解析
           */
         public void test1(MultipartFile file) {
-            List<User> list = ExcelService.importData(file, 0, new User())
+            List<User> list = ExcelService.importData(file, 0, User.class)
             // TODO
         }
         

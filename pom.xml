@@ -11,7 +11,7 @@
 
 	<groupId>com.github.Ling2099</groupId>
 	<artifactId>simple-excel</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 	<name>simple-excel</name>
 	<url>https://github.com/Ling2099/simple-excel</url>
