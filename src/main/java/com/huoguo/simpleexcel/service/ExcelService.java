@@ -176,7 +176,8 @@ public class ExcelService {
     }
 
     /**
-     * 简单的文件流下载，配合easyExcel实体类的注解一起使用 --> @ExcelProperty("字符串标题") @ExcelIgnore
+     * 简单的文件流下载，配合easyExcel实体类的注解一起使用
+     * 例如：@ExcelProperty("字符串标题") 或 @ExcelIgnore
      * @param response Http响应
      * @param list 数据集合
      * @param fileName 文件名称
