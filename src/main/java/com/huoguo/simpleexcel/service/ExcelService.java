@@ -32,20 +32,18 @@ public class ExcelService {
     /**
      * 解析Excel
      * @param file 文件对象
-     * @param sheetNo Sheet小标
      * @param clazz 实体类
      * @param <T> 注明泛型
      * @return 实体类集合
      */
-    public static <T> List<T> importData(MultipartFile file, Integer sheetNo, Class<T> clazz) {
-        ExcelReaderBuilder excelReaderBuilder = null;
+    public static <T> List<T> importData(MultipartFile file, Class<T> clazz) {
+        List<Map<Integer, Object>> list = new ArrayList<>();
         try {
-            excelReaderBuilder = EasyExcelFactory.read(MultipartFileToFile.multipartFileToFile(file), new NoModelDataListener());
-        } catch (Exception e) {
+            list = EasyExcelFactory.read(file.getInputStream()).doReadAllSync();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        excelReaderBuilder.sheet(sheetNo).doRead();
-        return toList(excelReaderBuilder.doReadAllSync(), clazz);
+        return toList(list, clazz);
     }
 
     /**

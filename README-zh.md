@@ -48,7 +48,7 @@
           * 文件导入解析
           */
         public void test1(MultipartFile file) {
-            List<User> list = ExcelService.importData(file, 0, User.class)
+            List<User> list = ExcelService.importData(file, User.class)
             // TODO
         }
         
