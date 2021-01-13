@@ -159,4 +159,26 @@ public class ExcelService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 简单的文件流下载，配合easyExcel实体类的注解一起使用
+     * 例如：@ExcelProperty("字符串标题") 或 @ExcelIgnore
+     * @param response Http响应
+     * @param list 数据集合
+     * @param fileName 文件名称
+     * @param clazz 文件头的实体类
+     */
+    public static void exportData(HttpServletResponse response, List list, String fileName, Class clazz) {
+        try {
+            response.setCharacterEncoding("utf-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, "UTF-8"));
+            response.setHeader("Pragma", "public");
+            response.setHeader("Cache-Control", "no-store");
+            response.addHeader("Cache-Control", "max-age=0");
+
+            EasyExcel.write(response.getOutputStream(), clazz).sheet().doWrite(list);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
