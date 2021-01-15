@@ -40,7 +40,25 @@ public class ExcelService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return toList(list, clazz);
+        return toList(list, clazz, 0);
+    }
+
+    /**
+     * 解析Excel
+     * @param file 文件对象
+     * @param clazz 实体类
+     * @param lineNum 固定行开始解析
+     * @param <T> 注明泛型
+     * @return 实体类集合
+     */
+    public static <T> List<T> importData(MultipartFile file, Class<T> clazz, int lineNum) {
+        List<Map<Integer, Object>> list = new ArrayList<>();
+        try {
+            list = EasyExcelFactory.read(file.getInputStream()).doReadAllSync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return toList(list, clazz, lineNum);
     }
 
     /**
@@ -50,7 +68,7 @@ public class ExcelService {
      * @param <T> 注明泛型
      * @return 实体类集合
      */
-    private static <T> List<T> toList(List<Map<Integer, Object>> list, Class<T> clazz) {
+    private static <T> List<T> toList(List<Map<Integer, Object>> list, Class<T> clazz, int lineNum) {
 
         int size = list.size();
         if (size == 0) {
@@ -60,7 +78,7 @@ public class ExcelService {
         List<T> result = new ArrayList<>();
 
         try {
-            for (int i = 0; i < size; i++) {
+            for (int i = lineNum; i < size; i++) {
                 if (list.get(i).isEmpty()) {
                     throw new RuntimeException("The data cannot be empty");
                 }
