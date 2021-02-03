@@ -7,6 +7,9 @@ import com.alibaba.excel.util.StringUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.huoguo.simpleexcel.annotation.ExcelColumns;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,15 +25,17 @@ import java.util.Map;
 
 /**
  * Excel工具接口实现类
+ *
  * @author Lizhenghuang
  */
 public class ExcelService {
 
     /**
      * 解析Excel
-     * @param file 文件对象
+     *
+     * @param file  文件对象
      * @param clazz 实体类
-     * @param <T> 注明泛型
+     * @param <T>   注明泛型
      * @return 实体类集合
      */
     public static <T> List<T> importData(MultipartFile file, Class<T> clazz) {
@@ -45,10 +50,11 @@ public class ExcelService {
 
     /**
      * 解析Excel
-     * @param file 文件对象
-     * @param clazz 实体类
+     *
+     * @param file    文件对象
+     * @param clazz   实体类
      * @param lineNum 固定行开始解析
-     * @param <T> 注明泛型
+     * @param <T>     注明泛型
      * @return 实体类集合
      */
     public static <T> List<T> importData(MultipartFile file, Class<T> clazz, int lineNum) {
@@ -63,13 +69,13 @@ public class ExcelService {
 
     /**
      * 转换泛型List集合
-     * @param list 数据集合
+     *
+     * @param list  数据集合
      * @param clazz 实体类泛型
-     * @param <T> 注明泛型
+     * @param <T>   注明泛型
      * @return 实体类集合
      */
     private static <T> List<T> toList(List<Map<Integer, Object>> list, Class<T> clazz, int lineNum) {
-
         int size = list.size();
         if (size == 0) {
             throw new RuntimeException("The container can not be null");
@@ -83,7 +89,7 @@ public class ExcelService {
                     throw new RuntimeException("The data cannot be empty");
                 }
 
-                T t =  clazz.newInstance();
+                T t = clazz.newInstance();
                 Field[] fields = t.getClass().getDeclaredFields();
 
                 for (Field field : fields) {
@@ -104,9 +110,10 @@ public class ExcelService {
 
     /**
      * 类属性值的为空判断
-     * @param obj 类属性值
+     *
+     * @param obj  类属性值
      * @param type 类属性类型
-     * @param <T> 表名泛型
+     * @param <T>  表名泛型
      * @return 泛型对象
      */
     private static <T> T convert(Object obj, Class<T> type) {
@@ -121,13 +128,29 @@ public class ExcelService {
     }
 
     /**
+     * 获取Excel工作簿
+     *
+     * @param file Excel文件
+     * @return 工作簿
+     */
+    public static Workbook getWorkBook(MultipartFile file) {
+        try {
+            return WorkbookFactory.create(file.getInputStream());
+        } catch (IOException | InvalidFormatException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 填充类型的文件下载，需预先定义好模板
+     *
      * @param response Http响应
-     * @param request Http请求
-     * @param is 文件输入流
-     * @param list 数据集合
+     * @param request  Http请求
+     * @param is       文件输入流
+     * @param list     数据集合
      * @param fileName 下载后文件的名称
-     * @param map 附加选项（填充）
+     * @param map      附加选项（填充）
      */
     public static void exportData(HttpServletResponse response, HttpServletRequest request, InputStream is, List list, String fileName, Map<String, Object> map) {
         try {
@@ -139,7 +162,7 @@ public class ExcelService {
             response.setHeader("Cache-Control", "no-store");
             response.addHeader("Cache-Control", "max-age=0");
 
-            if(map != null) {
+            if (map != null) {
                 ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream()).withTemplate(is).build();
                 WriteSheet writeSheet = EasyExcel.writerSheet().build();
                 // 设置List在向下填充时，自动添加一行空白
@@ -160,8 +183,9 @@ public class ExcelService {
     /**
      * 简单的文件流下载，配合easyExcel实体类的注解一起使用
      * 例如：@ExcelProperty("字符串标题") 或 @ExcelIgnore
+     *
      * @param response Http响应
-     * @param list 数据集合
+     * @param list     数据集合
      * @param fileName 文件名称
      */
     public static void exportData(HttpServletResponse response, List list, String fileName) {
@@ -181,10 +205,11 @@ public class ExcelService {
     /**
      * 简单的文件流下载，配合easyExcel实体类的注解一起使用
      * 例如：@ExcelProperty("字符串标题") 或 @ExcelIgnore
+     *
      * @param response Http响应
-     * @param list 数据集合
+     * @param list     数据集合
      * @param fileName 文件名称
-     * @param clazz 文件头的实体类
+     * @param clazz    文件头的实体类
      */
     public static void exportData(HttpServletResponse response, List list, String fileName, Class clazz) {
         try {
