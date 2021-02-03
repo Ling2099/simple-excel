@@ -70,6 +70,7 @@ public final class SimpleUtil {
                 .replace("，", ",")
                 .replace("。", "")
                 .replace("；", "")
+                .replace("：", ":")
                 .trim();
     }
 
