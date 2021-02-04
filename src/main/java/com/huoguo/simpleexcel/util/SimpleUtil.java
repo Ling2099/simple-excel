@@ -1,63 +1,15 @@
 package com.huoguo.simpleexcel.util;
 
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
+import com.alibaba.excel.util.StringUtils;
 
-import java.io.*;
+import java.math.BigDecimal;
 
 /**
- * MultipartFile转换File对象
+ * 简单工具对象
  *
  * @author Lizhenghuang
  */
 public final class SimpleUtil {
-
-    private static final int ZERO = 0, THOUSAND = 8192, MINUS = -1;
-
-    /**
-     * MultipartFile转换File对象
-     *
-     * @param file 文件对象
-     * @return File
-     */
-    public static File multipartFileToFile(MultipartFile file) {
-        File toFile = null;
-        if (file.equals("") || file.getSize() <= 0) {
-            file = null;
-        } else {
-            InputStream ins = null;
-            try {
-                ins = file.getInputStream();
-                toFile = new File(file.getOriginalFilename());
-                inputStreamToFile(ins, toFile);
-                ins.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return toFile;
-    }
-
-    /**
-     * Input输入流转换File对象
-     *
-     * @param ins  输入流
-     * @param file 文件对象
-     */
-    private static void inputStreamToFile(InputStream ins, File file) {
-        try {
-            OutputStream os = new FileOutputStream(file);
-            int bytesRead = ZERO;
-            byte[] buffer = new byte[THOUSAND];
-            while ((bytesRead = ins.read(buffer, ZERO, THOUSAND)) != MINUS) {
-                os.write(buffer, ZERO, bytesRead);
-            }
-            os.close();
-            ins.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 字符串过滤,中文符号转英文符号并去空格
@@ -83,5 +35,24 @@ public final class SimpleUtil {
      */
     public static String[] strSplit(String str, String separator) {
         return !StringUtils.isEmpty(separator) ? str.split(separator) : null;
+    }
+
+    /**
+     * 类属性值的为空判断
+     *
+     * @param obj  类属性值
+     * @param type 类属性类型
+     * @param <T>  表名泛型
+     * @return 泛型对象
+     */
+    public static <T> T convert(Object obj, Class<T> type) {
+        if (obj != null && !StringUtils.isEmpty(obj.toString())) {
+            if (type.equals(String.class)) {
+                return (T) obj.toString();
+            } else if (type.equals(BigDecimal.class)) {
+                return (T) new BigDecimal(obj.toString());
+            }
+        }
+        return null;
     }
 }

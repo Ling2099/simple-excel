@@ -3,25 +3,24 @@ package com.huoguo.simpleexcel.service;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.util.StringUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.huoguo.simpleexcel.annotation.ExcelColumns;
+import com.huoguo.simpleexcel.util.SimpleUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * Excel工具接口实现类
@@ -33,37 +32,38 @@ public class ExcelService {
     /**
      * 解析Excel
      *
-     * @param file  文件对象
+     * @param is  文件输入流
+     * @param <T> 注明泛型
+     * @return
+     */
+    public static <T> List<T> importData(InputStream is) {
+        return EasyExcelFactory.read(is).doReadAllSync();
+    }
+
+    /**
+     * 解析Excel
+     *
+     * @param is    文件输入流
      * @param clazz 实体类
      * @param <T>   注明泛型
      * @return 实体类集合
      */
-    public static <T> List<T> importData(MultipartFile file, Class<T> clazz) {
-        List<Map<Integer, Object>> list = new ArrayList<>();
-        try {
-            list = EasyExcelFactory.read(file.getInputStream()).doReadAllSync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static <T> List<T> importData(InputStream is, Class<T> clazz) {
+        List<Map<Integer, Object>> list = EasyExcelFactory.read(is).doReadAllSync();
         return toList(list, clazz, 0);
     }
 
     /**
      * 解析Excel
      *
-     * @param file    文件对象
+     * @param is      文件输入流
      * @param clazz   实体类
      * @param lineNum 固定行开始解析
      * @param <T>     注明泛型
      * @return 实体类集合
      */
-    public static <T> List<T> importData(MultipartFile file, Class<T> clazz, int lineNum) {
-        List<Map<Integer, Object>> list = new ArrayList<>();
-        try {
-            list = EasyExcelFactory.read(file.getInputStream()).doReadAllSync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static <T> List<T> importData(InputStream is, Class<T> clazz, int lineNum) {
+        List<Map<Integer, Object>> list = EasyExcelFactory.read(is).doReadAllSync();
         return toList(list, clazz, lineNum);
     }
 
@@ -97,7 +97,7 @@ public class ExcelService {
                     if (field.isAnnotationPresent(ExcelColumns.class)) {
                         ExcelColumns excelColumns = field.getAnnotation(ExcelColumns.class);
                         Object v = list.get(i).get(excelColumns.index());
-                        field.set(t, convert(v, field.getType()));
+                        field.set(t, SimpleUtil.convert(v, field.getType()));
                     }
                 }
                 result.add(t);
@@ -109,33 +109,14 @@ public class ExcelService {
     }
 
     /**
-     * 类属性值的为空判断
-     *
-     * @param obj  类属性值
-     * @param type 类属性类型
-     * @param <T>  表名泛型
-     * @return 泛型对象
-     */
-    private static <T> T convert(Object obj, Class<T> type) {
-        if (obj != null && !StringUtils.isEmpty(obj.toString())) {
-            if (type.equals(String.class)) {
-                return (T) obj.toString();
-            } else if (type.equals(BigDecimal.class)) {
-                return (T) new BigDecimal(obj.toString());
-            }
-        }
-        return null;
-    }
-
-    /**
      * 获取Excel工作簿
      *
-     * @param file Excel文件
+     * @param is 文件输入流
      * @return 工作簿
      */
-    public static Workbook getWorkBook(MultipartFile file) {
+    public static Workbook getWorkBook(InputStream is) {
         try {
-            return WorkbookFactory.create(file.getInputStream());
+            return WorkbookFactory.create(is);
         } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
         }
