@@ -45,20 +45,20 @@
         private UserMapper mapper;
         
         /**
-          * 文件导入解析
-          */
+         * 文件导入解析
+         */
+        @SneakyThrows
         public void test1(MultipartFile file) {
-            List<User> list = ExcelService.importData(file, User.class)
+            List<User> list = ExcelService.importData(file.getInputStream(), User.class)
             // TODO
         }
         
         /**
-          * 文件导出下载
-          */
+         * 文件导出下载
+         */
         public void test2(String fileName) {
             ExcelService.exportData(response, mapper.getList(), fileName)
         }
-        
     }  
 ```
 
