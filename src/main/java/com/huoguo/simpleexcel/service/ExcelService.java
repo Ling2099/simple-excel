@@ -5,19 +5,14 @@ import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
-import com.huoguo.simpleexcel.annotation.ExcelColumns;
 import com.huoguo.simpleexcel.util.SimpleUtil;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +29,7 @@ public class ExcelService {
      *
      * @param is  文件输入流
      * @param <T> 注明泛型
-     * @return
+     * @return List
      */
     public static <T> List<T> importData(InputStream is) {
         return EasyExcelFactory.read(is).doReadAllSync();
@@ -50,7 +45,7 @@ public class ExcelService {
      */
     public static <T> List<T> importData(InputStream is, Class<T> clazz) {
         List<Map<Integer, Object>> list = EasyExcelFactory.read(is).doReadAllSync();
-        return toList(list, clazz, 0);
+        return SimpleUtil.toList(list, clazz, 0);
     }
 
     /**
@@ -64,63 +59,21 @@ public class ExcelService {
      */
     public static <T> List<T> importData(InputStream is, Class<T> clazz, int lineNum) {
         List<Map<Integer, Object>> list = EasyExcelFactory.read(is).doReadAllSync();
-        return toList(list, clazz, lineNum);
+        return SimpleUtil.toList(list, clazz, lineNum);
     }
 
     /**
-     * 转换泛型List集合
-     *
-     * @param list  数据集合
-     * @param clazz 实体类泛型
-     * @param <T>   注明泛型
-     * @return 实体类集合
-     */
-    private static <T> List<T> toList(List<Map<Integer, Object>> list, Class<T> clazz, int lineNum) {
-        int size = list.size();
-        if (size == 0) {
-            throw new RuntimeException("The container can not be null");
-        }
-
-        List<T> result = new ArrayList<>();
-
-        try {
-            for (int i = lineNum; i < size; i++) {
-                if (list.get(i).isEmpty()) {
-                    throw new RuntimeException("The data cannot be empty");
-                }
-
-                T t = clazz.newInstance();
-                Field[] fields = t.getClass().getDeclaredFields();
-
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    if (field.isAnnotationPresent(ExcelColumns.class)) {
-                        ExcelColumns excelColumns = field.getAnnotation(ExcelColumns.class);
-                        Object v = list.get(i).get(excelColumns.index());
-                        field.set(t, SimpleUtil.convert(v, field.getType()));
-                    }
-                }
-                result.add(t);
-            }
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    /**
-     * 获取Excel工作簿
+     * 解析Excel（含合并单元格）
      *
      * @param is 文件输入流
-     * @return 工作簿
+     * @return List
      */
-    public static Workbook getWorkBook(InputStream is) {
-        try {
-            return WorkbookFactory.create(is);
-        } catch (IOException | InvalidFormatException e) {
-            e.printStackTrace();
+    public static List<String[]> analyseData(InputStream is) {
+        Workbook workbook = SimpleUtil.getWorkBook(is);
+        if (workbook == null) {
+            throw new RuntimeException("This Workbook is Null");
         }
-        return null;
+        return SimpleUtil.getWorkbookValue(workbook);
     }
 
     /**
