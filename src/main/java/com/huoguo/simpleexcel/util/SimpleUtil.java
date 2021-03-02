@@ -127,7 +127,6 @@ public final class SimpleUtil {
      * @return List
      */
     public static Set<List<String[]>> getWorkbookValue(Workbook workbook) {
-        List<String[]> list = new ArrayList<>();
         int sheetNum = workbook.getNumberOfSheets();
         Set<List<String[]>> set = new HashSet<>(sheetNum);
         for (int i = 0; i < sheetNum; i++) {
@@ -135,6 +134,7 @@ public final class SimpleUtil {
             int rows = sheet.getPhysicalNumberOfRows();
             int cells = sheet.getRow(0).getPhysicalNumberOfCells();
 
+            List<String[]> list = new ArrayList<>(rows * cells);
             for (int r = 0; r < rows; r++) {
                 Row row = sheet.getRow(r);
                 String[] str = new String[cells];
