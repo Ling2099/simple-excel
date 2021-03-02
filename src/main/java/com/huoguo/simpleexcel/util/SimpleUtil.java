@@ -10,9 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 简单工具对象
@@ -128,9 +126,10 @@ public final class SimpleUtil {
      * @param workbook 当前工作簿
      * @return List
      */
-    public static List<String[]> getWorkbookValue(Workbook workbook) {
+    public static Set<List<String[]>> getWorkbookValue(Workbook workbook) {
         List<String[]> list = new ArrayList<>();
         int sheetNum = workbook.getNumberOfSheets();
+        Set<List<String[]>> set = new HashSet<>(sheetNum);
         for (int i = 0; i < sheetNum; i++) {
             Sheet sheet = workbook.getSheetAt(i);
             int rows = sheet.getPhysicalNumberOfRows();
@@ -149,8 +148,9 @@ public final class SimpleUtil {
                 }
                 list.add(str);
             }
+            set.add(list);
         }
-        return list;
+        return set;
     }
 
     /**

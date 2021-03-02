@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -68,7 +69,7 @@ public class ExcelService {
      * @param is 文件输入流
      * @return List
      */
-    public static List<String[]> analyseData(InputStream is) {
+    public static Set<List<String[]>> analyseData(InputStream is) {
         Workbook workbook = SimpleUtil.getWorkBook(is);
         if (workbook == null) {
             throw new RuntimeException("This Workbook is Null");
