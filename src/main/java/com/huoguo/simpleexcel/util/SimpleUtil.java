@@ -143,7 +143,7 @@ public final class SimpleUtil {
                     if (isMerged(sheet, r, c)) {
                         str[c] = getMergedValue(sheet, r, c);
                     } else {
-                        str[c] = row.getCell(c).toString();
+                        str[c] = row.getCell(c) == null ? "" : row.getCell(c).toString();
                     }
                 }
                 list.add(str);
